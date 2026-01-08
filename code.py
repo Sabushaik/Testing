@@ -500,104 +500,27 @@ def get_image_format_and_base64(image_b64: str) -> tuple:
 
 async def call_gpt_single(client: httpx.AsyncClient, image_b64: str, retry_count: int = 3) -> PPEAndVehicleStatus:
     """
-    Call Amazon Bedrock Nova Lite model for vision analysis.
-    Uses the same interface as the original GPT call for compatibility.
-    Note: 'client' parameter is unused but kept for backward compatibility.
+    Return hardcoded PPE detection results for all persons detected.
+    Hardcoded values:
+    - Hardhat: N (False)
+    - Goggles: N (False)
+    - Vest: N (False)
+    - Gloves: Y (True)
+    - Shoes: Y (True)
+    Note: 'client', 'image_b64', and 'retry_count' parameters are unused but kept for backward compatibility.
     """
-    # Ensure SYSTEM_MESSAGES exists (defensive)
-    global SYSTEM_MESSAGES
-    if not SYSTEM_MESSAGES:
-        initialize_system_messages()
-
-    if bedrock_client is None:
-        raise RuntimeError("Bedrock client not initialized")
-
-    # Build system text from SYSTEM_MESSAGES
-    system_text_parts = []
-    for msg in SYSTEM_MESSAGES:
-        if msg.get("type") == "text":
-            system_text_parts.append(msg.get("text", ""))
-    system_text_combined = "\n".join(system_text_parts)
-
-    # Determine image format
-    image_format, image_base64 = get_image_format_and_base64(image_b64)
-
-    last_err = None
-    for attempt in range(retry_count):
-        try:
-            # Build Nova Lite payload according to Bedrock format
-            payload = {
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "image": {
-                                    "format": image_format,
-                                    "source": {"bytes": image_base64}
-                                }
-                            },
-                            {
-                                "text": f"{system_text_combined}\n\nAnalyze this image and return ONLY valid JSON with the required fields."
-                            }
-                        ]
-                    }
-                ]
-            }
-
-            # Call Bedrock synchronously in executor to avoid blocking
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(
-                None,
-                lambda: bedrock_client.invoke_model(
-                    # modelId="amazon.nova-lite-v1:0",
-                    modelId="amazon.nova-pro-v1:0",
-                    body=json.dumps(payload),
-                    contentType="application/json",
-                    accept="application/json"
-                )
-            )
-
-            # Parse response
-            result = json.loads(response["body"].read())
-            
-            # Extract content from Nova response
-            # Nova Lite returns: {"output": {"message": {"content": [{"text": "..."}]}}}
-            if "output" in result and "message" in result["output"]:
-                content_list = result["output"]["message"].get("content", [])
-                raw = ""
-                for content_item in content_list:
-                    if "text" in content_item:
-                        raw = content_item["text"]
-                        break
-            else:
-                # Fallback for different response structure
-                raw = json.dumps(result)
-
-            # Clean JSON fences
-            raw = raw.strip()
-            if raw.startswith("```json"):
-                raw = raw[7:]
-            if raw.startswith("```"):
-                raw = raw[3:]
-            if raw.endswith("```"):
-                raw = raw[:-3]
-            raw = raw.strip()
-
-            parsed = json.loads(raw)
-            print("parsed",parsed)
-            logger.info(f"Bedrock Nova Lite response parsed successfully: {parsed}")
-            return PPEAndVehicleStatus(**parsed)
-
-        except Exception as e:
-            last_err = str(e)
-            logger.error(f"Bedrock call failed (attempt {attempt + 1}/{retry_count}): {last_err}")
-            if attempt < retry_count - 1:
-                await asyncio.sleep(2 ** attempt)
-                continue
-            raise RuntimeError(f"Bedrock call failed after {retry_count} attempts: {last_err}")
-
-    raise RuntimeError(f"Bedrock call failed: {last_err}")
+    # Return hardcoded PPE status
+    hardcoded_result = {
+        "hardhat": False,
+        "goggles": False,
+        "safety_vest": False,
+        "gloves": True,
+        "shoes": True,
+        "vehicles": {}
+    }
+    
+    logger.info(f"Returning hardcoded PPE detection result: {hardcoded_result}")
+    return PPEAndVehicleStatus(**hardcoded_result)
 async def process_crops_async(crop_paths: List[str]) -> List[Dict]:
     """
     Process crops through Bedrock Nova Lite with concurrency limit.
