@@ -523,8 +523,9 @@ async def call_gpt_single(client: httpx.AsyncClient, image_b64: str, retry_count
     return PPEAndVehicleStatus(**hardcoded_result)
 async def process_crops_async(crop_paths: List[str]) -> List[Dict]:
     """
-    Process crops through Bedrock Nova Lite with concurrency limit.
-    Requires AWS credentials to be set with Bedrock access.
+    Process crops with hardcoded PPE detection values.
+    Returns the same hardcoded PPE status for all crops.
+    Note: Maintains async structure for compatibility with existing pipeline.
     """
 
     results = [None] * len(crop_paths)
