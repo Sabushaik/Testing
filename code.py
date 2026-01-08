@@ -1206,12 +1206,20 @@ def process_video_with_gpt_pipeline(
 @app.get("/")
 def read_root():
     return {
-        "message":  "PPE Detection API with YOLO + Bedrock Nova Lite Vision Pipeline",
+        "message":  "PPE Detection API with YOLO + Hardcoded PPE Detection",
         "triton_connected": triton_client is not None,
         "triton_server":  TRITON_URL,
         "model_name": MODEL_NAME,
-        "vision_model":  "amazon.nova-lite-v1:0",
-        "vision_provider": "Amazon Bedrock",
+        "vision_model":  "hardcoded",
+        "vision_provider": "Static/Hardcoded Values",
+        "ppe_detection_mode": "hardcoded",
+        "hardcoded_values": {
+            "hardhat": "N",
+            "goggles": "N",
+            "vest": "N",
+            "gloves": "Y",
+            "shoes": "Y"
+        },
         "input_size": TARGET_SIZE,
         "s3_bucket": S3_BUCKET,
         "s3_configured": bool(S3_BUCKET and AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY),
@@ -1247,22 +1255,17 @@ def health_check():
         "triton_healthy": triton_healthy,
         "triton_server":  TRITON_URL,
         "model_name": MODEL_NAME,
-        "vision_model": "amazon.nova-lite-v1:0",
-        "vision_provider": "Amazon Bedrock",
+        "vision_model": "hardcoded",
+        "vision_provider": "Static/Hardcoded Values",
+        "ppe_detection_mode": "hardcoded",
         "bedrock_connected": bedrock_healthy
     }
 
 @app.post("/test-gpt")
 async def test_gpt():
-    """Test Bedrock Nova Lite API connection"""
+    """Test hardcoded PPE detection functionality"""
     try:
-        if bedrock_client is None:
-            return {
-                "error": "Bedrock client not initialized",
-                "details": "Check AWS credentials and region configuration"
-            }
-
-        # Create a small test image (100x100 red square)
+        # Create a small test image (100x100 red square) - not actually used
         import io
         from PIL import Image
         img = Image.new('RGB', (100, 100), color='red')
@@ -1270,60 +1273,28 @@ async def test_gpt():
         img.save(buffer, format='JPEG', quality=50)
         test_image_b64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
 
-        logger.info("Testing Bedrock Nova Lite API with test image...")
+        logger.info("Testing hardcoded PPE detection...")
 
-        # Build test payload
-        payload = {
-            "messages": [
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "image": {
-                                "format": "jpeg",
-                                "source": {"bytes": test_image_b64}
-                            }
-                        },
-                        {
-                            "text": "What color is this image? Respond with just the color name."
-                        }
-                    ]
-                }
-            ]
-        }
-
-        # Call Bedrock
-        response = bedrock_client.invoke_model(
-            # modelId="amazon.nova-lite-v1:0",
-            modelId="amazon.nova-pro-v1:0",
-            body=json.dumps(payload),
-            contentType="application/json",
-            accept="application/json"
-        )
-
-        result = json.loads(response["body"].read())
-        logger.info(f"Bedrock test response: {result}")
-
-        # Extract text from response
-        response_text = "No response"
-        if "output" in result and "message" in result["output"]:
-            content_list = result["output"]["message"].get("content", [])
-            for content_item in content_list:
-                if "text" in content_item:
-                    response_text = content_item["text"]
-                    break
+        # Call the hardcoded function
+        result = await call_gpt_single(None, test_image_b64)
 
         return {
             "status": "success",
-            "model": "amazon.nova-lite-v1:0",
-            "provider": "Amazon Bedrock",
-            "region": AWS_REGION,
-            "test_response": response_text[:500],
-            "full_response": result
+            "model": "hardcoded",
+            "provider": "Static/Hardcoded Values",
+            "ppe_detection_mode": "hardcoded",
+            "test_response": {
+                "hardhat": "N" if not result.hardhat else "Y",
+                "goggles": "N" if not result.goggles else "Y",
+                "safety_vest": "N" if not result.safety_vest else "Y",
+                "gloves": "Y" if result.gloves else "N",
+                "shoes": "Y" if result.shoes else "N"
+            },
+            "full_response": result.model_dump()
         }
 
     except Exception as e:
-        logger.error(f"Test Bedrock failed: {e}", exc_info=True)
+        logger.error(f"Test hardcoded PPE detection failed: {e}", exc_info=True)
         return {
             "error": str(e),
             "type": type(e).__name__,
