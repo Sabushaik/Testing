@@ -4,16 +4,21 @@ Script to generate a beautiful PDF from the Astec Transcripts.txt file.
 Converts <tag> markers to formatted headings and maintains proper spacing.
 """
 
-from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_JUSTIFY
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.lib.utils import simpleSplit
-import re
 import html
+import sys
+import os
+
+
+# Valid tag names that should be formatted as headings
+VALID_TAG_NAMES = {
+    'machine_type', 'worker_safety', 'operations', 'anomalies',
+    'operation', 'anomaly', 'general'
+}
 
 
 def parse_transcript_file(file_path):
@@ -79,7 +84,7 @@ def parse_transcript_file(file_path):
         if line.startswith('(') and line.endswith(')') and not line.startswith('(**'):
             # Extract tag name
             tag_name = line[1:-1]
-            if tag_name in ['machine_type', 'worker_safety', 'operations', 'anomalies', 'operation', 'anomaly']:
+            if tag_name in VALID_TAG_NAMES:
                 current_section['content'].append(('heading', tag_name))
                 i += 1
                 continue
@@ -239,12 +244,21 @@ def create_pdf(input_file, output_file):
 
 def main():
     """Main function to generate the PDF."""
-    input_file = "/home/runner/work/Testing/Testing/Astec Transcripts.txt"
-    output_file = "/home/runner/work/Testing/Testing/Astec Transcripts.pdf"
+    # Default file paths
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    default_input = os.path.join(script_dir, "Astec Transcripts.txt")
+    default_output = os.path.join(script_dir, "Astec Transcripts.pdf")
+    
+    # Allow command-line arguments for flexibility
+    input_file = sys.argv[1] if len(sys.argv) > 1 else default_input
+    output_file = sys.argv[2] if len(sys.argv) > 2 else default_output
     
     try:
         create_pdf(input_file, output_file)
         print(f"\n✅ Successfully generated PDF: {output_file}")
+    except FileNotFoundError as e:
+        print(f"\n❌ Input file not found: {input_file}")
+        print(f"Usage: python {sys.argv[0]} [input_file.txt] [output_file.pdf]")
     except Exception as e:
         print(f"\n❌ Error generating PDF: {e}")
         import traceback
