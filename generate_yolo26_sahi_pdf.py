@@ -191,6 +191,7 @@ def create_yolo26_sahi_pdf():
             elements.append(img2)
             elements.append(Spacer(1, 0.2*inch))
     except Exception as e:
+        print(f"Warning: Could not load GEN2 comparison images: {e}")
         elements.append(Paragraph(f"[GEN2 comparison images would appear here]", body_style))
     
     elements.append(PageBreak())
@@ -229,6 +230,7 @@ def create_yolo26_sahi_pdf():
             elements.append(img4)
             elements.append(Spacer(1, 0.2*inch))
     except Exception as e:
+        print(f"Warning: Could not load HP comparison images: {e}")
         elements.append(Paragraph(f"[HP comparison images would appear here]", body_style))
     
     elements.append(PageBreak())
