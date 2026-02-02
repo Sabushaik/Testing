@@ -1,0 +1,187 @@
+# 📄 **Detection Accuracy Enhancement Using YOLO26m + SAHI**
+
+## Manufacturing Surveillance Person Detection System
+
+---
+
+## 🎯 Objective
+
+The goal of this task was to **improve person detection accuracy and reliability** in manufacturing surveillance streams.
+
+As part of continuous system optimization, we evaluated detection performance and upgraded our pipeline from:
+
+**YOLOv8 (YOLOv8l)**
+➡️ to
+**YOLO26 (YOLO26m) + SAHI**
+
+This migration resulted in **higher recall, better small-object detection, and more stable real-time inference**.
+
+---
+
+# 🔁 Model Evolution Overview
+
+## 🔹 Earlier Approach — YOLOv8l
+
+![Image](https://www.mdpi.com/micromachines/micromachines-14-00442/article_deploy/html/images/micromachines-14-00442-g001.png)
+
+![Image](https://www.researchgate.net/publication/4047914/figure/fig1/AS%3A279874578206721%401443738707065/Bounding-boxes-generation-phase-the-two-horizontal-green-lines-represent-the-search.png)
+
+![Image](https://www.labelvisor.com/content/images/size/w1200/2023/12/Screenshot_14.png)
+
+![Image](https://www.labelvisor.com/content/images/2023/12/Screenshot_10.png)
+
+### Observed Behavior
+
+* Good general detection performance
+* Accurate for medium/large persons
+* Real-time capable
+
+### Gaps noticed during evaluation
+
+* Reduced detection of **far-distance/tiny persons**
+* Missed **partially occluded workers**
+* Lower recall in **crowded scenes**
+* Detail loss when processing high-resolution frames
+
+---
+
+## 🔹 Upgraded Approach — YOLO26m + SAHI
+
+![Image](https://www.mdpi.com/micromachines/micromachines-14-00442/article_deploy/html/images/micromachines-14-00442-g001.png)
+
+![Image](https://cdn.shopify.com/s/files/1/0504/7094/4954/files/farm-security-cameras.jpg?v=1717466871)
+
+![Image](https://www.mdpi.com/buildings/buildings-14-00859/article_deploy/html/images/buildings-14-00859-g001-550.jpg)
+
+![Image](https://uploads-ssl.webflow.com/63bfe0f56cd7cb4e1c759642/64b57fe7114f0aea2f24418f_0%2A4P_N7TwcHdyj2Qxf.png)
+
+### Outcome After Upgrade
+
+* More persons detected at long distances
+* Better recognition of tiny targets
+* Stable detection in dense environments
+* Higher overall recall
+* Consistent real-time inference
+
+---
+
+# 🧠 YOLO26m — Technical Capabilities Delivered
+
+### Key Features
+
+### 1. Small-Object Focused Learning
+
+Improved label assignment and training strategy increases sensitivity to **tiny and distant persons**.
+
+### 2. End-to-End Detection (No NMS Dependency)
+
+Direct predictions reduce:
+
+* box suppression
+* overlapping miss detections
+
+Result → **Better crowded-scene reliability**
+
+### 3. Faster Inference Pipeline
+
+Optimized architecture enables:
+
+* Lower latency
+* Higher FPS
+* Smooth CCTV processing
+
+### 4. Robust Feature Extraction
+
+Enhanced backbone improves:
+
+* Occlusion handling
+* Complex background separation
+* Machinery/person differentiation
+
+### 5. Efficient Compute Usage
+
+Medium variant provides:
+
+* Near-large accuracy
+* Lower GPU/CPU consumption
+  Ideal for edge/industrial deployments
+
+---
+
+# ✂️ SAHI — Inference Strategy Enhancements
+
+### Key Features
+
+### 1. Image Slicing Mechanism
+
+Large frames are split into smaller tiles before detection.
+
+### 2. Enhanced Pixel Visibility
+
+Small persons appear larger inside each tile → easier detection.
+
+### 3. Higher Recall Without Retraining
+
+Improves detection using the same model weights.
+
+### 4. Scalable to High Resolution (1080p/4K)
+
+Maintains detail without downscaling.
+
+### 5. Plug-and-Play Integration
+
+Works directly with YOLO detectors without architectural changes.
+
+---
+
+# ⚙️ How the Combined System Works
+
+## Detection Pipeline
+
+```
+Video Stream
+     ↓
+Frame Extraction
+     ↓
+SAHI → Slice into tiles
+     ↓
+YOLO26m inference per tile
+     ↓
+Box fusion & merge
+     ↓
+Final detections
+     ↓
+Monitoring / Alerts / Analytics
+```
+
+---
+
+# 📊 Performance Comparison
+
+| Metric                 | YOLOv8l          | YOLO26m + SAHI |
+| ---------------------- | ---------------- | -------------- |
+| Small person detection | Medium           | High           |
+| Far-distance recall    | Low–Medium       | High           |
+| Occlusion handling     | Moderate         | Strong         |
+| Crowded scenes         | Partial misses   | Stable         |
+| High-res support       | Downscale needed | Native         |
+| FPS                    | Good             | Better         |
+| Overall reliability    | Good             | Excellent      |
+
+---
+
+# ✅ Final Outcome
+
+### Achievements
+
+* Increased person detection recall
+* Reduced missed detections
+* Improved small & distant object recognition
+* Stable performance in dense industrial scenes
+* Real-time edge deployment ready
+
+---
+
+## 📌 Summary Statement (Presentation Ready)
+
+> As part of our detection optimization initiative, we migrated from YOLOv8l to YOLO26m integrated with SAHI sliced inference. This upgrade significantly improved small and distant person detection, enhanced robustness in crowded and occluded manufacturing environments, and delivered higher real-time accuracy without increasing computational cost.
